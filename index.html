@@ -13,6 +13,8 @@
 				var c = document.getElementById("myCanvas");
 				var ctx = c.getContext("2d");
 
+				const FRAMES_PER_SECOND = 60;
+
 				var numOrganismsStart = 10;
 				var numFoodSourcesStart = 2;
 				var numWaterSourcesStart = 2;
@@ -21,11 +23,13 @@
 				var foodSources = [];
 				var waterSources = [];
 
-				function makeOrganism() {
+				var everythingMade = false;
+
+				function makeOrganism(index) {
 					var organism {
 						x:Math.floor(Math.random() * (window.innerWidth + 1)),
 						y:Math.floor(Math.random() * (window.innerHeight + 1)),
-						index:0;	
+						index:index;	
 						xVelocity:5,
 						yVelocity:5,
 						health:10,
@@ -109,6 +113,18 @@
 				// Have to do all initial setup and indices of organisms!
 
 				function update() {
+					if (everythingMade == false) {
+						for (var a = 0; a < numOrganismsStart; a++) {
+							makeOrganism(a);
+						}
+						for (var b = 0; b < numFoodSourcesStart; b++) {
+							makeFood(a);
+						}
+						for (var c = 0; c < numWaterSourcesStart; c++) {
+							makeWater(a);
+						}
+						everythingMade = true;
+					}
 					for (var i = 0; i < organisms.length; i++) {
 						if (organisms[i].alive == true) {
 							// Figure out fear by finding distance to other players, maybe only within certain distance, and squares with decrease?
@@ -132,12 +148,32 @@
 							organisms[i].food -= organisms[i].foodDecreaseRate;
 							if (organisms[i].food == 0) { // Do not want division by 0
 								organisms[i].hunger = 9;
+							} else {
+								organisms[i].hunger = 1/organisms[i].food;
 							}
-							organisms[i].hunger = (1/organisms[i].food * 9)
 							// Figure out thirst
+							organisms[i].water -= organisms[i].waterDecreaseRate;
+							if (organisms[i].water == 0) { // Do not want division by 0
+								organisms[i].thirst = 9;
+							} else {
+								organisms[i].thirst = 1/organisms[i].water;
+							}
+							var max = Math.max(organisms[i].fear, organisms[i].hunger, organisms[i].thirst);
+							if (max == organisms[i].fear) {
+								console.log("Organism " + organisms[i].index + "is fearful.");
+							} else if (max == organisms[i].hunger) {
+								console.log("Organism " + organisms[i].index + "is hungry.");
+							} else if (max == organisms[i].thirst) {
+								console.log("Organism " + organisms[i].index + "is thirsty.");
+							}
+							organisms[i].x += Math.floor(Math.random() * 5);
+							organisms[i].y += Math.floor(Math.random() * 5);
 						}
 					}
+					draw();
 				}
+
+				setInterval(function(){update();}, 1000/FRAMES_PER_SECOND);
 			</script>
 		</div>
 	</body>
