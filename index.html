@@ -14,33 +14,128 @@
 				var ctx = c.getContext("2d");
 
 				var numOrganismsStart = 10;
+				var numFoodSourcesStart = 2;
+				var numWaterSourcesStart = 2;
 
 				var organisms = [];
+				var foodSources = [];
+				var waterSources = [];
 
 				function makeOrganism() {
-					var player {
+					var organism {
 						x:Math.floor(Math.random() * (window.innerWidth + 1)),
 						y:Math.floor(Math.random() * (window.innerHeight + 1)),
+						index:0;	
 						xVelocity:5,
 						yVelocity:5,
 						health:10,
-						flightDesire:0, // Between 0 and 9
+						fear:0, // Between 0 and 9
+						closestToDistance:(window.innerWidth + window.innerHeight),
+						closestToIndex:0,
 						food:100,
-						foodDecreaseRate:1,
-						foodDesire:0, // Between 0 and 9
+						foodDecreaseRate:0.01,
+						hunger:0, // Between 0 and 9
 						water:100,
-						waterDecreaseRate:1,
-						waterDesire:0, // Between 0 and 9
+						waterDecreaseRate:0.02,
+						thirst:0, // Between 0 and 9
+						damage:1,
 						size:2,
 						alive:true;
 					}
+					organisms.push(organism);
 				}
 
-				function drawOrganism
+				function makeFood() {
+					var foodSource {
+						x:Math.floor(Math.random() * (window.innerWidth + 1)),
+						y:Math.floor(Math.random() * (window.innerHeight + 1)),
+						color:"30CC00",
+						size:50;
+					}
+					foodSources.push(foodSource);
+				}
+
+				function makeWater() {
+					var waterSource {
+						x:Math.floor(Math.random() * (window.innerWidth + 1)),
+						y:Math.floor(Math.random() * (window.innerHeight + 1)),
+						color:"41D0FF",
+						size:50;
+					}
+					waterSources.push(waterSource);
+				}
+
+				function drawOrganism(x, y, size) {
+					ctx.save();
+
+					ctx.fillStyle = "000000";
+					ctx.fillRect(x, y, size, size);
+
+					ctx.restore();
+				}
+
+				function drawFoodSources(x, y, color, size) {
+					ctx.save();
+
+					ctx.fillStyle = color;
+					ctx.fillRect(x, y, size, size);
+
+					ctx.restore();
+				}
+
+				function drawWaterSources(x, y, color, size) {
+					ctx.save();
+
+					ctx.fillStyle = color;
+					ctx.fillRect(x, y, size, size);
+
+					ctx.restore();
+				}
 
 				function draw() {
 					for (var i = 0; i < organisms.length; i++) {
-						
+						if (organisms[i].alive == true) {
+							drawOrganism(organisms[i].x, organisms[i].y, organisms[i].size);
+						}
+					}
+					for (var j = 0; j < foodSources.length; j++) {
+						drawFoodSources(foodSources[j].x, foodSources[j].y, foodSources[j].color, foodSources[j].size);
+					}
+					for (var j = 0; j < waterSources.length; j++) {
+						drawWaterSources(waterSources[j].x, waterSources[j].y, waterSources[j].color, waterSources[j].size);
+					}
+				}
+
+				// Have to do all initial setup and indices of organisms!
+
+				function update() {
+					for (var i = 0; i < organisms.length; i++) {
+						if (organisms[i].alive == true) {
+							// Figure out fear by finding distance to other players, maybe only within certain distance, and squares with decrease?
+							for (var j = 0; j < organisms.length; j++) {
+								if ((organisms[j].index != organisms[i].index) && (organisms[i].alive == true)) {
+									var xDist = organisms[i].x - organisms[j].x;
+									var yDist = organisms[i].y - organisms[j].y;
+									var dist = Math.sqrt((xDist)*(xDist) + (yDist)*(yDist));
+									if ((dist < 200) && (dist < organisms[i].closestToDistance)) {
+										organisms[i].closestToDistance = dist;
+										organisms[i].closestToIndex = organisms[j].index;
+									} 
+								}
+							}
+							if ((1/organisms[i].closestToDistance > 9) || (organisms[i].closestToDistance == 0)) {
+								organisms[i].fear = 9;
+							} else {
+								organisms[i].fear = 1/organisms[i].closestToDistance
+							}
+							// Figure out hunger
+							organisms[i].food -= organisms[i].foodDecreaseRate;
+							if (organisms[i].food == 0) { // Do not want division by 0
+								organisms[i].hunger = 9;
+							}
+							organisms[i].hunger = (1/organisms[i].food * 9)
+							// Figure out thirst
+						}
 					}
 				}
 			</script>
