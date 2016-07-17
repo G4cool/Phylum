@@ -3,7 +3,7 @@
 		<title>Phylum</title>
 	</head>
 	<body>
-		<div id="gameDiv" style="display: none;">
+		<div id="gameDiv">
 			<canvas id="myCanvas" width="800" height="800"></canvas>
 
 			<script>
@@ -26,12 +26,11 @@
 				var everythingMade = false;
 
 				function makeOrganism(index) {
-					var organism {
+					var organism = {
 						x:Math.floor(Math.random() * (window.innerWidth + 1)),
 						y:Math.floor(Math.random() * (window.innerHeight + 1)),
-						index:index;	
-						xVelocity:5,
-						yVelocity:5,
+						index:index,
+						maxMove:1,
 						health:10,
 						fear:0, // Between 0 and 9
 						closestToDistance:(window.innerWidth + window.innerHeight),
@@ -43,42 +42,48 @@
 						waterDecreaseRate:0.02,
 						thirst:0, // Between 0 and 9
 						damage:1,
-						size:2,
-						alive:true;
+						size:5,
+						alive:true
 					}
 					organisms.push(organism);
 				}
 
 				function makeFood() {
-					var foodSource {
+					var foodSource = {
 						x:Math.floor(Math.random() * (window.innerWidth + 1)),
 						y:Math.floor(Math.random() * (window.innerHeight + 1)),
-						color:"30CC00",
-						size:50;
+						color:"#30CC00",
+						size:50
 					}
 					foodSources.push(foodSource);
 				}
 
 				function makeWater() {
-					var waterSource {
+					var waterSource = {
 						x:Math.floor(Math.random() * (window.innerWidth + 1)),
 						y:Math.floor(Math.random() * (window.innerHeight + 1)),
-						color:"41D0FF",
-						size:50;
+						color:"#41D0FF",
+						size:50
 					}
 					waterSources.push(waterSource);
 				}
 
-				function drawOrganism(x, y, size) {
+				function drawOrganism(x, y, size, follow) {
+					//console.log("drawing organisms");
 					ctx.save();
 
-					ctx.fillStyle = "000000";
+					if (follow == 1) {
+						ctx.fillStyle = "#9B0ECC";
+					} else {
+						ctx.fillStyle = "#000000";
+					}
 					ctx.fillRect(x, y, size, size);
 
 					ctx.restore();
 				}
 
 				function drawFoodSources(x, y, color, size) {
+					//console.log("drawing food sources");
 					ctx.save();
 
 					ctx.fillStyle = color;
@@ -88,6 +93,7 @@
 				}
 
 				function drawWaterSources(x, y, color, size) {
+					//console.log("drawing water sources");
 					ctx.save();
 
 					ctx.fillStyle = color;
@@ -96,32 +102,39 @@
 					ctx.restore();
 				}
 
-				function draw() {
-					for (var i = 0; i < organisms.length; i++) {
-						if (organisms[i].alive == true) {
-							drawOrganism(organisms[i].x, organisms[i].y, organisms[i].size);
-						}
-					}
+				function draw(indexToFollow) {
+					//console.log("drawing shit");
 					for (var j = 0; j < foodSources.length; j++) {
 						drawFoodSources(foodSources[j].x, foodSources[j].y, foodSources[j].color, foodSources[j].size);
 					}
-					for (var j = 0; j < waterSources.length; j++) {
-						drawWaterSources(waterSources[j].x, waterSources[j].y, waterSources[j].color, waterSources[j].size);
+					for (var k = 0; k < waterSources.length; k++) {
+						drawWaterSources(waterSources[k].x, waterSources[k].y, waterSources[k].color, waterSources[k].size);
+					}
+					for (var i = 0; i < organisms.length; i++) {
+						if (organisms[i].alive == true) {
+							if (i == indexToFollow) {
+								drawOrganism(organisms[i].x, organisms[i].y, organisms[i].size, 1);
+							} else {
+								drawOrganism(organisms[i].x, organisms[i].y, organisms[i].size, 0);
+							}
+						}
 					}
 				}
 
 				// Have to do all initial setup and indices of organisms!
 
 				function update() {
+					ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+
 					if (everythingMade == false) {
 						for (var a = 0; a < numOrganismsStart; a++) {
 							makeOrganism(a);
 						}
 						for (var b = 0; b < numFoodSourcesStart; b++) {
-							makeFood(a);
+							makeFood(b);
 						}
 						for (var c = 0; c < numWaterSourcesStart; c++) {
-							makeWater(a);
+							makeWater(c);
 						}
 						everythingMade = true;
 					}
@@ -160,17 +173,67 @@
 							}
 							var max = Math.max(organisms[i].fear, organisms[i].hunger, organisms[i].thirst);
 							if (max == organisms[i].fear) {
-								console.log("Organism " + organisms[i].index + "is fearful.");
+								if (i == 0) {
+									console.log("0 is fearful.");
+								}
+								var slope = ((organisms[organisms[i].closestToIndex].y - organisms[i].y)/(organisms[organisms[i].closestToIndex].x - organisms[i].x));
+								var tempX = 1;
+								var tempY = slope;
+								var scaleFactor = (organisms[i].maxMove/(Math.sqrt((tempX)*(tempX)+(tempY)*(tempY))));
+								if (organisms[organisms[i].closestToIndex].x >= organisms[i].x) {
+									organisms[i].x -= tempX * scaleFactor;
+									organisms[i].y -= tempY * scaleFactor;
+								} else {
+									organisms[i].x += tempX * scaleFactor;
+									organisms[i].y += tempY * scaleFactor;
+								}
 							} else if (max == organisms[i].hunger) {
-								console.log("Organism " + organisms[i].index + "is hungry.");
+								if (i == 0) {
+									console.log("0 is hungry.");
+								}
+								var slope = ((foodSources[0].y - organisms[i].y)/(foodSources[0].x - organisms[i].x));
+								var tempX = 1;
+								var tempY = slope;
+								var scaleFactor = (organisms[i].maxMove/(Math.sqrt((tempX)*(tempX)+(tempY)*(tempY))));
+								var xDist = organisms[i].x - foodSources[0].x;
+								var yDist = organisms[i].y - foodSources[0].y;
+								var dist = Math.sqrt((xDist)*(xDist) + (yDist)*(yDist));
+								if (dist < organisms[i].maxMove * organisms[i].maxMove) {
+									organisms[i].x += 0;
+									organisms[i].y += 0;
+								} else {
+									if (foodSources[0].x >= organisms[i].x) {
+										organisms[i].x += tempX * scaleFactor;
+										organisms[i].y += tempY * scaleFactor;
+									} else {
+										organisms[i].x -= tempX * scaleFactor;
+										organisms[i].y -= tempY * scaleFactor;
+									}
+								}
 							} else if (max == organisms[i].thirst) {
-								console.log("Organism " + organisms[i].index + "is thirsty.");
+								var slope = ((waterSources[0].y - organisms[i].y)/(waterSources[0].x - organisms[i].x));
+								var tempX = 1;
+								var tempY = slope;
+								var scaleFactor = (organisms[i].maxMove/(Math.sqrt((tempX)*(tempX)+(tempY)*(tempY))));
+								var xDist = organisms[i].x - waterSources[0].x;
+								var yDist = organisms[i].y - waterSources[0].y;
+								var dist = Math.sqrt((xDist)*(xDist) + (yDist)*(yDist));
+								if (dist < organisms[i].maxMove * organisms[i].maxMove) {
+									organisms[i].x += 0;
+									organisms[i].y += 0;
+								} else {
+									if (waterSources[0].x >= organisms[i].x) {
+										organisms[i].x += tempX * scaleFactor;
+										organisms[i].y += tempY * scaleFactor;
+									} else {
+										organisms[i].x -= tempX * scaleFactor;
+										organisms[i].y -= tempY * scaleFactor;
+									}
+								}
 							}
-							organisms[i].x += Math.floor(Math.random() * 5);
-							organisms[i].y += Math.floor(Math.random() * 5);
 						}
 					}
-					draw();
+					draw(0);
 				}
 
 				setInterval(function(){update();}, 1000/FRAMES_PER_SECOND);
