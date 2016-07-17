@@ -1,0 +1,49 @@
+<html>
+	<head>
+		<title>Phylum</title>
+	</head>
+	<body>
+		<div id="gameDiv" style="display: none;">
+			<canvas id="myCanvas" width="800" height="800"></canvas>
+
+			<script>
+				document.getElementById("myCanvas").width = window.innerWidth;
+				document.getElementById("myCanvas").height = window.innerHeight;
+
+				var c = document.getElementById("myCanvas");
+				var ctx = c.getContext("2d");
+
+				var numOrganismsStart = 10;
+
+				var organisms = [];
+
+				function makeOrganism() {
+					var player {
+						x:Math.floor(Math.random() * (window.innerWidth + 1)),
+						y:Math.floor(Math.random() * (window.innerHeight + 1)),
+						xVelocity:5,
+						yVelocity:5,
+						health:10,
+						flightDesire:0, // Between 0 and 9
+						food:100,
+						foodDecreaseRate:1,
+						foodDesire:0, // Between 0 and 9
+						water:100,
+						waterDecreaseRate:1,
+						waterDesire:0, // Between 0 and 9
+						size:2,
+						alive:true;
+					}
+				}
+
+				function drawOrganism
+
+				function draw() {
+					for (var i = 0; i < organisms.length; i++) {
+						
+					}
+				}
+			</script>
+		</div>
+	</body>
+</html>
